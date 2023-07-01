@@ -1,0 +1,8 @@
+node_modules
+dist
+!client/dist
+supabase
+supabase_commands
+supabase-api-crud.code-workspace
+**.swp
+# .env
