@@ -15,6 +15,7 @@ import axios from "../api/axios-config";
 export type TasksContextState = {
   readonly tasks: Task[];
   readonly error: string;
+  readonly loading: boolean;
 };
 
 export type TasksContextValue = [
@@ -33,6 +34,7 @@ export type TasksContextValue = [
 const defaultState = {
   tasks: [],
   error: "",
+  loading: false,
 };
 
 const TasksContext = createContext<TasksContextValue>([
@@ -49,13 +51,17 @@ const TasksContext = createContext<TasksContextValue>([
 export const TasksProvider: ParentComponent<{
   tasks?: Task[];
   error?: string;
+  loading?: boolean;
 }> = (props) => {
   const [state, setState] = createStore({
     tasks: props.tasks ?? defaultState.tasks,
     error: props.error ?? defaultState.error,
+    loading: props.loading ?? defaultState.loading,
   });
 
   const createTask = (task: TaskCreateRequest) => {
+    setState("loading", true);
+
     axios
       .post("/tasks", task)
       .then((response) => {
@@ -68,6 +74,7 @@ export const TasksProvider: ParentComponent<{
             created_at: response.data.created_at,
           };
           setState("tasks", [data, ...state.tasks]);
+          setState("loading", false);
           // console.log(state.tasks);
         }
       })
@@ -80,14 +87,20 @@ export const TasksProvider: ParentComponent<{
               err.response?.data.error ||
               defaultState.error
           );
+
+          setState("loading", false);
         } else {
           // console.error((err as Error).message);
           setState("error", (err as Error).message);
+
+          setState("loading", false);
         }
       });
   };
 
   const getTasks = () => {
+    setState("loading", true);
+
     axios
       .get("/tasks")
       .then((response) => {
@@ -103,6 +116,7 @@ export const TasksProvider: ParentComponent<{
             return item;
           });
           setState("tasks", [...data]);
+          setState("loading", false);
         }
       })
       .catch((err) => {
@@ -114,14 +128,20 @@ export const TasksProvider: ParentComponent<{
               err.response?.data.error ||
               defaultState.error
           );
+
+          setState("loading", false);
         } else {
           // console.error((err as Error).message);
           setState("error", (err as Error).message);
+
+          setState("loading", false);
         }
       });
   };
 
   const getTask = async (id: string) => {
+    setState("loading", true);
+
     return axios
       .get(`/tasks/${id}`)
       .then((response) => {
@@ -133,6 +153,8 @@ export const TasksProvider: ParentComponent<{
             completed: response.data.completed,
             created_at: response.data.created_at,
           };
+
+          setState("loading", false);
 
           return data;
         }
@@ -146,14 +168,20 @@ export const TasksProvider: ParentComponent<{
               err.response?.data.error ||
               defaultState.error
           );
+
+          setState("loading", false);
         } else {
           // console.error((err as Error).message);
           setState("error", (err as Error).message);
+
+          setState("loading", false);
         }
       });
   };
 
   const updateTask = (id: string, itemToUpadate: TaskUpdateRequest) => {
+    setState("loading", true);
+
     axios
       .put(`/tasks/${id}`, itemToUpadate)
       .then((response) => {
@@ -171,6 +199,7 @@ export const TasksProvider: ParentComponent<{
                   }
             )
           );
+          setState("loading", false);
         }
       })
       .catch((err) => {
@@ -182,14 +211,20 @@ export const TasksProvider: ParentComponent<{
               err.response?.data.error ||
               defaultState.error
           );
+
+          setState("loading", false);
         } else {
           // console.error((err as Error).message);
           setState("error", (err as Error).message);
+
+          setState("loading", false);
         }
       });
   };
 
   const deleteTask = (id: string) => {
+    setState("loading", true);
+
     axios
       .delete(`/tasks/${id}`)
       .then((response) => {
@@ -199,6 +234,8 @@ export const TasksProvider: ParentComponent<{
             "tasks",
             state.tasks.filter((task) => task.id !== id)
           );
+
+          setState("loading", false);
         }
       })
       .catch((err) => {
@@ -210,9 +247,13 @@ export const TasksProvider: ParentComponent<{
               err.response?.data.error ||
               defaultState.error
           );
+
+          setState("loading", false);
         } else {
           // console.error((err as Error).message);
           setState("error", (err as Error).message);
+
+          setState("loading", false);
         }
       });
   };
